@@ -1,0 +1,7 @@
+version: '1.0'
+
+resources:
+
+  input_bucket:
+    type: bucket
+    name: bambora-bi-storage-formatted-docker-eu-west-1

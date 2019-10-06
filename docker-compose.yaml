@@ -1,0 +1,46 @@
+version: '2'
+
+services:
+
+  provisioner:
+    image: akino1976/aws-local-provisioner
+    environment:
+      S3_HOST: aws-mock:3000
+      AWS_LOCAL_TEMPLATE_PATH: /templates/aws-mock-resources.yaml
+    volumes:
+      - ./aws-mock-resources.yaml:/templates/aws-mock-resources.yaml
+    depends_on:
+      - aws-mock
+
+  aws-mock:
+    image: localstack/localstack:latest
+    environment:
+      DEFAULT_REGION: eu-west-1
+      SERVICES: s3:3000
+      FORCE_NONINTERACTIVE: 'true'
+      HOSTNAME: aws-mock
+      HOSTNAME_EXTERNAL: aws-mock
+      DEBUG: 0
+
+  storage:
+    image: microsoft/mssql-server-linux:2017-CU13
+    ports:
+      - 1433:1433
+    environment:
+      MSSQL_SA_PASSWORD: Test-password
+      ACCEPT_EULA: Y
+      PATH: /opt/mssql-tools/bin:/opt/mssql/bin:$PATH
+      TZ: Europe/Stockholm
+
+  db-migrator:
+    image: database-migrator:${VERSION}
+    build:
+      dockerfile: ./migrator/Dockerfile
+      context: .
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_ENDPOINT: ${DB_ENDPOINT}
+      DB_PASSWORD_KEY: ${DB_PASSWORD_KEY}
+    depends_on:
+      - storage
