@@ -8,7 +8,9 @@ from pytest_bdd import given, parsers
 
 from botocore.client import ClientError
 
+import utils.yaml as yaml
 import helpers.aws as aws
+
 import settings
 
 

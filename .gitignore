@@ -1,0 +1,15 @@
+.vscode
+__pycache__
+*.xlsx
+.ignored
+.DS_Store
+.cache
+**/output
+*.log
+junkcodes.txt
+.sonarlint
+tools/systemtest-base-image/build_*
+*.xml
+*.pytest_cache
+tests/systemtests/.pytest_cache
+.python-version

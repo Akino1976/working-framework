@@ -2,6 +2,7 @@ import os
 
 from typing import Any, Dict, List
 
+import settings as settings
 import boto3
 import botocore.config
 
@@ -21,6 +22,8 @@ def get_client(service_name: str) -> boto3.session.Session.client:
     params = dict(
         service_name=service_name,
         region_name='eu-west-1',
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
         config=botocore.config.Config(
             connect_timeout=1,
             read_timeout=10,
@@ -36,13 +39,37 @@ def get_client(service_name: str) -> boto3.session.Session.client:
 
 
 def upload_file(bucket: str, key: str, body: str):
-    client = get_client('s3')
+    client = get_client(service_name='s3')
 
     return client.put_object(
         Bucket=bucket,
         Key=key,
         Body=body,
     )
+
+
+def s3_upload_file(dataset: List[Dict[str, str]],
+                   s3_file_name: str,
+                   bucket_name: str):
+
+    client = get_client(service_name='s3')
+
+    count_rows = len(dataset)
+
+    if count_rows == 0:
+        return
+
+    try:
+        stringified_data = format_newline_delimited_json(dataset)
+        client.put_object(
+            Bucket=bucket_name,
+            Body=stringified_data,
+            Key=s3_file_name,
+        )
+        LOGGER.info(f'Successfully uploaded {s3_file_name} to S3')
+
+    except Exception as exception:
+        raise Exception(f'S3 upload of string: {exception}')
 
 
 def _get_s3_contents(bucket_name: str,

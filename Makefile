@@ -20,9 +20,6 @@ run-%:
 run-migrator:
 	docker-compose $(COMPOSE_DEFAULT_FLAGS) run --rm db-migrator
 
-run-mock:
-	docker-compose $(COMPOSE_DEFAULT_FLAGS) run --rm aws-mock
-
 setup-local-environment: provision
 
 build-systemtests:
