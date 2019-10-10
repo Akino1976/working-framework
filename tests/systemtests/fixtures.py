@@ -68,3 +68,7 @@ def auth_table_name():
     yesterday = datetime.datetime.now() - datetime.timedelta(days = 1)
     yesterday = yesterday.strftime('%Y-%m-%d')
     return f'stg_ga_authorization_{yesterday}-14-09-32-f00f9837-e9e8-4b56-9cdc-0a1e1cde513d'
+
+@pytest.fixture
+def queue_url():
+    pass

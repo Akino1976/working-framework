@@ -1,10 +1,14 @@
 import os
+import logging
 
 from typing import Any, Dict, List
 
-import settings as settings
+import common.collection_formatter as collection_formatter
+import settings
 import boto3
 import botocore.config
+
+logger = logging.getLogger(__name__)
 
 
 def _get_proxy(service_name: str):
@@ -60,13 +64,15 @@ def s3_upload_file(dataset: List[Dict[str, str]],
         return
 
     try:
-        stringified_data = format_newline_delimited_json(dataset)
+        stringified_data = collection_formatter.format_newline_delimited_json(
+            dataset
+        )
         client.put_object(
             Bucket=bucket_name,
             Body=stringified_data,
             Key=s3_file_name,
         )
-        LOGGER.info(f'Successfully uploaded {s3_file_name} to S3')
+        logger.info(f'Successfully uploaded {s3_file_name} to S3')
 
     except Exception as exception:
         raise Exception(f'S3 upload of string: {exception}')
@@ -77,7 +83,7 @@ def _get_s3_contents(bucket_name: str,
     client = get_client('s3')
 
     response = client.list_objects_v2(
-        Bucket=bucket_name,
+        Bucket=settings.BUCKET,
         Prefix=key_prefix
     )
 
@@ -88,7 +94,7 @@ def check_bucket_objects_exists(bucket_name: str,
                                 key_prefix: str) -> bool:
 
     response = _get_s3_contents(
-        bucket_name=bucket_name,
+        bucket_name=settings.BUCKET,
         key_prefix=key_prefix
     )
 
@@ -97,3 +103,25 @@ def check_bucket_objects_exists(bucket_name: str,
         for item in response
         if item.get('Key').endswith('ndjson')
     )
+
+
+def purge_queue(queue_url: str):
+    client = get_client('sqs')
+
+    client.purge_queue(QueueUrl=queue_url)
+
+
+def empty_bucket(bucket: str):
+    client = get_client('s3')
+    paginator = client.get_paginator('list_objects_v2')
+
+    keys = []
+
+    for page in paginator.paginate(Bucket=bucket, MaxKeys=1000):
+        if 'Contents' in page:
+            keys += [item['Key'] for item in page['Contents']]
+
+    for key in keys:
+        client.delete_object(Bucket=bucket, Key=key)
+
+        print(f'{key} deleted from {bucket}')

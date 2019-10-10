@@ -53,7 +53,7 @@ parser.add_option(
 
 options, args = parser.parse_args()
 
-ENVIRONMENT = 'docker'
+ENVIRONMENT = 'test'
 
 
 ignored_file_path = os.path.join(
@@ -74,3 +74,5 @@ AWS_SESSION_TOKEN = os.getenv('AWS_SESSION_TOKEN')
 API_BASE_HOST = os.environ.get('API_BASE_HOST')
 QUEUE_NAME = os.environ.get('QUEUE_NAME')
 MOTO_HOST = os.environ.get('MOTO_HOST')
+QUEUE_URL = os.environ.get('QUEUE_URL')
+BUCKET = os.environ.get('BUCKET')

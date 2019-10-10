@@ -37,11 +37,12 @@ class ConnectSpecfication(object):
                  database=None):
 
         self.database = database
+        self.dsn = 'storage' if settings.ENVIRONMENT == 'docker' else '127.0.0.1'
 
     def connect_spec(self):
 
         return pytds.connect(
-                dsn=dsn,
+                dsn=self.dsn,
                 database=self.database,
                 autocommit=False,
                 user='SA',
@@ -80,10 +81,11 @@ def get_engine(destination: str) -> Engine:
 def insert_data(dataset: List[Dict[str, Any]],
                 database: str=None,
                 tablename: str=None):
+    engine = get_engine(destination=database)
+
     try:
         Base = automap_base()
 
-        engine = get_engine(destination=database)
         Base.prepare(engine, reflect=True)
 
         meta_table = Base.classes[tablename]

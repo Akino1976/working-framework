@@ -42,6 +42,14 @@ def put_file_in_bucket(yaml_string: str, request: object):
     )
 
 
+@given(parsers.parse('the queue {queue_url} is purged'), target_fixture='queue_url')
+def purge_queue(request, queue_url):
+    queue_url = yaml.load_with_tags(request, queue_url)
+    aws.purge_queue(queue_url=queue_url)
+
+    return queue_url
+
+
 @given(parsers.parse('the bucket {bucket_name} is empty'))
 def empty_bucket(bucket_name):
     aws.empty_bucket(bucket_name)
@@ -52,3 +60,14 @@ def named_bucket(request, bucket_name):
     options = yaml.load_with_tags(request, bucket_name)
     aws.empty_bucket(bucket=options)
 
+
+@given(parsers.parse('following tables are empty:\n{yaml_string}'))
+def truncate_db_tables(yaml_string: str, request: object):
+    options = yaml.load_with_tags(request, yaml_string)
+
+    for content in options:
+
+        db_helpers.truncate_table(
+            database=content.get('database'),
+            tablename=content.get('tablename')
+        )
