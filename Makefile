@@ -46,6 +46,9 @@ run-migrator:
 
 setup-local-environment: provision
 
+build-app: run-migrator
+	docker-compose $(COMPOSE_TEST_FLAGS) build app
+
 run-detached: build-app
 	docker-compose $(COMPOSE_FLAGS) run -d app
 
@@ -72,3 +75,11 @@ clear-volumes: clear-all-containers
 
 clear-images: clear-volumes
 	docker images -q | uniq | xargs -I@ docker rmi -f @
+
+test:
+	docker run  --rm -it \
+		-e AWS_ACCESS_KEY_ID=$(aws configure get aws_access_key_id --profile serdar) \
+		-e AWS_SECRET_ACCESS_KEY=$(aws configure get aws_secret_access_key --profile serdar) \
+		-e AWS_SESSION_TOKEN=$(aws configure get aws_session_token --profile serdar) \
+		-e DSN='storage' \
+			work-framework:commit_2d9a116

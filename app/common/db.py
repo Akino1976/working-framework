@@ -37,16 +37,19 @@ class ConnectSpecfication(object):
                  database=None):
 
         self.database = database
-        self.dsn = 'storage' if settings.ENVIRONMENT == 'docker' else '127.0.0.1'
+        self.dsn = 'storage'
 
     def connect_spec(self):
+
+        logger.info(f'Get connection: {self.dsn}')
 
         return pytds.connect(
                 dsn=self.dsn,
                 database=self.database,
-                autocommit=False,
+                autocommit=True,
                 user='SA',
-                password='Test-password'
+                password='Test-password',
+                port=1433
             )
 
 
@@ -83,6 +86,10 @@ def insert_data(dataset: List[Dict[str, Any]],
                 tablename: str=None):
     engine = get_engine(destination=database)
 
+    logger.info(
+            f'Running {database} on table name'
+            f' {tablename} '
+        )
     try:
         Base = automap_base()
 

@@ -6,6 +6,7 @@ import common.aws as aws
 import common.storage as storage
 import common.sqs_handler as sqs_handler
 import common.json_parser as json_parser
+import common.db as db
 
 import settings
 
@@ -59,6 +60,6 @@ def data_s3_retriver(url: str,
             )
 
         except Exception as error:
-            logger.error(f'Error in inserting data from {key}')
+            logger.error(f'Error in inserting data from {key} {error}')
 
         return sniffed.get('row_count')

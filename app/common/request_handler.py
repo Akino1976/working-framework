@@ -1,7 +1,6 @@
 import os
 import sys
 import datetime
-import dateutil.relativedelta
 import requests
 import logging
 
@@ -14,6 +13,7 @@ from typing import (
 )
 
 logger = logging.getLogger(__name__)
+
 API_BASE_HOST = 'https://api.github.com'
 
 

@@ -2,9 +2,11 @@ version: '2'
 
 services:
   app:
-    image: work-framework
+    image: work-framework:${VERSION}
     build:
-      context: .
+      context: app
+    depends_on:
+      - db-migrator
 
   provisioner:
     image: akino1976/aws-local-provisioner
