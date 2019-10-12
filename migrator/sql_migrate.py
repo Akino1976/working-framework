@@ -37,6 +37,14 @@ DB_USERNAME = os.getenv('DB_USERNAME', 'SA')
 ENVIRONMENT = os.getenv('ENVIRONMENT', 'docker')
 DB_PASSWORD_KEY = os.getenv('DB_PASSWORD_KEY')
 
+COLOR_GREEN = 42
+COLOR_BLACK = 40
+COLOR_BLUE = 37
+
+
+def print_color(output: str='Execute', color: int=40, bg: int=37):
+    return print(f'\x1b[1;{color};{bg}m{output}\x1b[0m')
+
 
 def list_all_files(path: str, pattern: str=None)->List[str]:
     sorted_list = []
@@ -76,8 +84,8 @@ class ConnectSpecfication(object):
                 dsn='storage',
                 database=self.database,
                 autocommit=True,
-                user=DB_USERNAME,
-                password=DB_PASSWORD_KEY
+                user='sa',
+                password='Test-password'
             )
 
 
@@ -127,12 +135,15 @@ def create_databases(databases: List[str], drop: bool=False):
         res_db_exists = connect.execute(query_db_exists)
         db_exists = len(res_db_exists.fetchall()) > 0
 
-        if not db_exists:
-            connect.execute(f'CREATE DATABASE [{database}]')
+        if db_exists:
+            connect.execute(f'DROP DATABASE [{database}]')
+
+            print_color(f'Drop database {database}')
+
+        connect.execute(f'CREATE DATABASE [{database}]')
 
         res_db_exists.close()
-
-        logger.info(f'Provisioned database {database}')
+        print_color(f'Provisioned database {database}')
 
     connect.close()
     engine.dispose()
@@ -153,13 +164,13 @@ def provision_sql(database: str, path: str=None):
         if sql_files:
 
             for sqlpath in sql_files:
-                logger.info(f'Executing query from file [{sqlpath}')
+                print_color(f'Executing query from file [{sqlpath}')
 
                 with open(os.path.join(sqlpath), 'r') as sqlpath:
                     statement = text(sqlpath.read())
                     connection.execute(statement)
 
-                    logger.info(f'Done [{sqlpath}]')
+                    print_color(f'Done [{sqlpath}]')
 
             logger.info(f'Succesfully executed {len(sql_files)} files')
 

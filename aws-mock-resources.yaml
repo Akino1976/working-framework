@@ -4,4 +4,9 @@ resources:
 
   input_bucket:
     type: bucket
-    name: bambora-bi-storage-formatted-docker-eu-west-1
+    name: storage-docker-eu-west-1
+
+  queue_url:
+    type: queue
+    name: storage-queue-docker-eu-west-1
+

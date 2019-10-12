@@ -9,7 +9,7 @@ RUN mkdir -p /usr/db
 
 COPY ./migrator /usr/db/
 
-COPY ./assets/sql-source-code /usr/db/
+COPY ./app/assets/sql-source-code /usr/db/
 
 RUN pip install -r /usr/db/requirements.txt
 

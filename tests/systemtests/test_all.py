@@ -9,4 +9,4 @@ from steps.givens import *
 from steps.whens import *
 from steps.thens import *
 
-pytest_bdd.scenarios('features')
+pytest_bdd.scenarios('features/insert_data.feature')

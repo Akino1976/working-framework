@@ -1,11 +1,20 @@
 version: '2'
 
 services:
+  app:
+    image: work-framework:${VERSION}
+    build:
+      context: .
+    depends_on:
+      - db-migrator
+      - storage
 
   provisioner:
     image: akino1976/aws-local-provisioner
     environment:
-      S3_HOST: aws-mock:3000
+      S3_HOST: http://aws-mock:3000
+      SQS_HOST: http://aws-mock:3001
+      SNS_HOST: http://aws-mock:3003
       AWS_LOCAL_TEMPLATE_PATH: /templates/aws-mock-resources.yaml
     volumes:
       - ./aws-mock-resources.yaml:/templates/aws-mock-resources.yaml
@@ -13,10 +22,10 @@ services:
       - aws-mock
 
   aws-mock:
-    image: localstack/localstack:latest
+    image: localstack/localstack:0.8.6
     environment:
       DEFAULT_REGION: eu-west-1
-      SERVICES: s3:3000
+      SERVICES: s3:3000,sqs:3001,ssm:3002,sns:3003,kinesis:3004,dynamodb:3005
       FORCE_NONINTERACTIVE: 'true'
       HOSTNAME: aws-mock
       HOSTNAME_EXTERNAL: aws-mock
@@ -44,3 +53,11 @@ services:
       DB_PASSWORD_KEY: ${DB_PASSWORD_KEY}
     depends_on:
       - storage
+
+  db-analysis:
+    image: r-working:${VERSION}
+    build:
+      dockerfile: ./analysis/Dockerfile
+      context: .
+    volumes:
+      - './analysis/GRAF/:/usr/src/analysis/GRAF'

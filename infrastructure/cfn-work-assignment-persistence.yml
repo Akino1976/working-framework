@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Business Intelligence Storage persistence infrastructure
+
+Parameters:
+
+  Environment:
+    Description: Environment to deploy to.
+    Type: String
+    Default: test
+    AllowedValues:
+      - dev
+      - test
+      - prod
+
+  ServiceName:
+    Description: The name of the service
+    Type: String
+    Default: working-framework
+
+Resources:
+
+  DataLakeBucket:
+    Type: AWS::S3::Bucket
+    DependsOn: InternalNotificationsTopic
+    Properties:
+      BucketName: !Sub ${ServiceName}-data-lake-${Environment}-${AWS::Region}
+      NotificationConfiguration:
+        TopicConfigurations:
+          - Event: s3:ObjectCreated:Put
+            Topic: !Ref InternalNotificationsTopic
+          - Event: s3:ObjectCreated:Post
+            Topic: !Ref InternalNotificationsTopic
+          - Event: s3:ObjectCreated:CompleteMultipartUpload
+            Topic: !Ref InternalNotificationsTopic
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+
+  DataLakeDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      DelaySeconds: 0
+      MaximumMessageSize: 262144
+      MessageRetentionPeriod: 1209600
+      QueueName: !Sub ${ServiceName}-data-lake-dead-letter-queue-${Environment}-${AWS::Region}
+      ReceiveMessageWaitTimeSeconds: 0
+      VisibilityTimeout: 30
+
+  InternalNotificationsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: !Sub ${ServiceName}-internal-notifications-${Environment}-${AWS::Region}
+      TopicName: !Sub ${ServiceName}-internal-notifications-${Environment}-${AWS::Region}

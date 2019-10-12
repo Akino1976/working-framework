@@ -3,9 +3,9 @@ version: '2'
 services:
 
   systemtests-base:
-    image: systemtests-bi-data-integration:${VERSION}
+    image: systemtests-work-framework:${VERSION}
     build:
-      context: systemtests
+      context: tests/systemtests
       dockerfile: Dockerfile
       args:
         BAMBORA_PYPI_USERNAME: ${BAMBORA_PYPI_USERNAME}
@@ -14,7 +14,7 @@ services:
       S3_HOST: aws-mock:3000
       PYTHONDONTWRITEBYTECODE: 1
       AWS_REGION: ${AWS_REGION}
-      INPUT_BUCKET: bambora-bi-storage-formatted-docker-eu-west-1
+      INPUT_BUCKET: storage-formatted-docker-eu-west-1
     volumes:
       - ./awsmock-credentials:/root/.aws/credentials
 
@@ -22,6 +22,8 @@ services:
     extends:
       service: systemtests-base
       file: docker-compose.test.yaml
+    depends_on:
+      - storage
 
   systemtests-watch:
     extends:
@@ -30,4 +32,7 @@ services:
     entrypoint: ptw
     command: --ext=py,feature --ignore=/.cache/** --config pytest.cfg -p --pdb
     volumes:
-      - ./systemtests:/systemtests
+      - ./tests/systemtests:/systemtests
+      - ./awsmock-credentials:/root/.aws/credentials
+    depends_on:
+      - storage

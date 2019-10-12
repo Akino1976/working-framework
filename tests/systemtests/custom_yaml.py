@@ -53,7 +53,7 @@ def as_sqs_message(loader, tag_suffix, node):
                 'body': json.dumps({
                     'Type': 'Notification',
                     'MessageId': 'a990f1e5-cfab-5f93-9e79-a4af8d159fb1',
-                    'TopicArn': 'arn:aws:sns:eu-west-1:254506858912:bi-storage-formatted-bucket-notifications-dev-eu-west-1',
+                    'TopicArn': 'arn:aws:sns:eu-west-1:254506858912:storage-queue-docker-eu-west-1',
                     'Subject': 'Amazon S3 Notification',
                     'Message': json.dumps({
                         'Records': [
@@ -77,9 +77,9 @@ def as_sqs_message(loader, tag_suffix, node):
                                     's3SchemaVersion': '1.0',
                                     'configurationId': 'abc123-1234-1323-1231-12312123134',
                                     'bucket': {
-                                        'name': 'bambora-bi-storage-formatted-docker-eu-west-1',
+                                        'name': 'storage-docker-eu-west-1',
                                         'ownerIdentity': {'principalId': 'AZXMVRRHVZYLV'},
-                                        'arn': 'arn:aws:s3:::bambora-bi-storage-formatted-docker-eu-west-1'
+                                        'arn': 'arn:aws:s3:::storage-docker-eu-west-1'
                                     },
                                     'object': loader.construct_mapping(node, deep=True),
                                 }
@@ -90,7 +90,7 @@ def as_sqs_message(loader, tag_suffix, node):
                     'SignatureVersion': '1',
                     'Signature': 'mHfgtiQq5hA5JwkUn4BQYzPF8wUI1OuZ5aJf7sLjHLs+M/0ZhtXdMYR4kpFzWzhzRcA/xBo9ipF+xCmElcenaXmz1RJEvI9e/Ax0XIUHZCPXDwoCGYw95/FLrsZtY3n38XPrG3qC02RIxLsZNJgt4Sx+EbsptqLuDDLNSbLolQV1gHpYQSy/b/h0BNCRnuZ4i2Sswu+eP7NtLwukMMfwufpqo1eN6zQUpkU+I6OlX34FQ/zCxAW7E2wt8710gcnDSEFsw1xBAsCpFOiVj6fp1ISK7jhXeV9syoBVDEAStUVqM6udFC4TBp/l7obEdtt8eplkp74ogfUpd93EglLG2g==',
                     'SigningCertURL': 'https://sns.eu-west-1.amazonaws.com/SimpleNotificationService-6aad65c2f9911b05cd53efda11f913f9.pem',
-                    'UnsubscribeURL': 'https://sns.eu-west-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-west-1:254506858912:bi-storage-formatted-bucket-notifications-dev-eu-west-1:6a86664f-7019-4b74-a059-8f4db559688e'
+                    'UnsubscribeURL': 'https://sns.eu-west-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-west-1:254506858912:storage-queue-docker-eu-west-1:6a86664f-7019-4b74-a059-8f4db559688e'
                 }),
                 'attributes': {
                     'ApproximateReceiveCount': '1',
@@ -101,58 +101,11 @@ def as_sqs_message(loader, tag_suffix, node):
                 'messageAttributes': {},
                 'md5OfBody': '16228f4fb709388ff481c1deaf86c35d',
                 'eventSource': 'aws:sqs',
-                'eventSourceARN': 'arn:aws:sqs:eu-west-1:254506858912:bambora-bi-storage-data-integration-queue-dev-eu-west-1',
+                'eventSourceARN': 'arn:aws:sqs:eu-west-1:254506858912:storage-queue-docker-eu-west-1',
                 'awsRegion': 'eu-west-1'
             }
         ]
     }
-
-
-def blabla():
-    return {
-        'Records': [
-            {
-                'EventVersion': '1.0',
-                'EventSubscriptionArn': 'arn:aws:some:eu-west-1:123456789012:arn-value-here',
-                'EventSource': 'aws:sns',
-                'body': {
-                    'Records': [
-                        {
-                            'eventVersion': '2.1',
-                            'eventSource': 'aws:s3',
-                            'awsRegion': 'eu-west-1',
-                            'eventTime': '2019-05-06T14:34:19.732Z',
-                            'eventName': 'ObjectCreated:CompleteMultipartUpload',
-                            'userIdentity': {
-                                'principalId': 'AWS:AISDOAISDA:blabla@email.com'
-                            },
-                            'requestParameters': {
-                                'sourceIPAddress': '123.12.12.123'
-                            },
-                            'responseElements': {
-                                'x-amz-request-id': '8732859923746593C',
-                                'x-amz-id-2': 'oaisjdaisdJOAISJDOIAjdijsadiaJPOAISD='
-                            },
-                            's3': {
-                                's3SchemaVersion': '1.0',
-                                'configurationId': 'abc123-1234-1323-1231-12312123134',
-                                'bucket': {
-                                    'name': 'bambora-bi-storage-formatted-docker-eu-west-1',
-                                    'ownerIdentity': {'principalId': 'AZXMVRRHVZYLV'},
-                                    'arn': 'arn:aws:s3:::bambora-bi-storage-formatted-docker-eu-west-1'
-                                },
-                                'object': json.dumps(
-                                    loader.construct_mapping(node, deep=True),
-                                    ensure_ascii=False
-                                ),
-                            }
-                        }
-                    ]
-                }
-            }
-        ]
-    }
-
 
 class ContainsString(CompareSingleValueMeta):
     def __eq__(self, other):
