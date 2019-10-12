@@ -12,14 +12,15 @@ def main():
 
     try:
         processor.data_upload_handler(
-            api=settings.API_BASE_HOST,
+            from_date='2017-01-01',
+            to_date='2017-07-15',
             bucket_name=settings.BUCKET
         )
 
         nr_rows_inserted = processor.data_s3_retriver(
             url=settings.QUEUE_URL,
             data_base='TestDB',
-            table_name='github_url'
+            table_name='train_information'
         )
 
     except Exception as error:

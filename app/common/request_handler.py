@@ -3,6 +3,7 @@ import sys
 import datetime
 import requests
 import logging
+import json
 
 from typing import (
     Dict,
@@ -11,20 +12,27 @@ from typing import (
     Union,
     List
 )
+import common.utils as utils
+
+import settings
 
 logger = logging.getLogger(__name__)
 
-API_BASE_HOST = 'https://api.github.com'
 
+def _get_api_data(search_date: str) -> Optional[List[Dict[str, Any]]]:
 
-def _get_api_data(api: str=None) -> Optional[List[Dict[str, Any]]]:
+    if search_date is None:
+        raise Exception(f'Need to specify search_date')
 
-    if api is None:
-        raise Exception(f'Need to specify api')
+    base_url = f'{settings.API_BASE_HOST}'
+    search_query = f'v1/trains/{search_date}/45'
 
-    request_url = f'{API_BASE_HOST}'
-
-    response = requests.get(url=request_url)
+    response = requests.get(
+        url=os.path.join(
+            base_url,
+            search_query
+        )
+    )
 
     if response.status_code != 200:
         raise Exception(f'Status error: {response.text}')
@@ -32,19 +40,35 @@ def _get_api_data(api: str=None) -> Optional[List[Dict[str, Any]]]:
     return response.json()
 
 
-def fetch_data(api: str=API_BASE_HOST) -> List[Dict[str, Any]]:
+def fetch_data(from_date: str,
+               to_date: str) -> List[Dict[str, Any]]:
+
+    date_span = utils.date_span(
+        from_date=from_date,
+        to_date=to_date
+    )
 
     try:
-        data_set = _get_api_data(api=api)
+        s3_data = []
+        for _date in date_span:
+            logger.info(f' Running {_date}')
+
+            data_set = _get_api_data(search_date=_date)
+
+            serilize_data_set = {}
+            for values in data_set:
+                for _key, _values in values.items():
+                    if isinstance(_values, list):
+                        serilize_data_set[_key] = json.dumps(_values)
+                    else:
+                        serilize_data_set[_key] = _values
+
+            serilize_data_set.update({'query_date': _date})
+
+            s3_data.append(serilize_data_set)
 
     except Exception as error:
-        logger.exception(f'Error in api {api} {error}')
+        logger.exception(f'Error in fetching data {error}')
 
-    logger.info(f'Success with {api}')
+    return s3_data
 
-    return [
-        {
-            'source_url': _key,
-            'url': _value
-        } for _key, _value in data_set.items()
-    ]

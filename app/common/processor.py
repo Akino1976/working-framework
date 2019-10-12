@@ -6,6 +6,7 @@ import common.aws as aws
 import common.storage as storage
 import common.sqs_handler as sqs_handler
 import common.json_parser as json_parser
+import common.collection_formatter as collection_formatter
 import common.db as db
 
 import settings
@@ -13,13 +14,18 @@ import settings
 logger = logging.getLogger(__name__)
 
 
-def data_upload_handler(api: str, bucket_name: str):
+def data_upload_handler(from_date: str,
+                        to_date: str,
+                        bucket_name: str):
 
     data_set = request_handler.fetch_data(
-        api=api
+        from_date=from_date, to_date=to_date
     )
 
-    s3_key_name = os.path.basename(api)
+    s3_key_name = os.path.join(
+        'TRAIN',
+        f'train_data_{from_date}_{to_date}'
+    )
 
     aws.s3_upload_file(
         dataset=data_set,

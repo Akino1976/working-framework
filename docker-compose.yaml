@@ -4,9 +4,10 @@ services:
   app:
     image: work-framework:${VERSION}
     build:
-      context: app
+      context: .
     depends_on:
       - db-migrator
+      - storage
 
   provisioner:
     image: akino1976/aws-local-provisioner
@@ -53,3 +54,10 @@ services:
     depends_on:
       - storage
 
+  db-analysis:
+    image: r-working:${VERSION}
+    build:
+      dockerfile: ./analysis/Dockerfile
+      context: .
+    volumes:
+      - './analysis/GRAF/:/usr/src/analysis/GRAF'

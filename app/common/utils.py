@@ -66,3 +66,13 @@ def offset_datetime_strftime(base_date: Optional[datetime.datetime]=None,
     offset_date = base_date - datetime.timedelta(**kwargs)
 
     return offset_date.strftime(format)
+
+
+def date_span(from_date: str, to_date: str) -> List[str]:
+    start_date = datetime.datetime.strptime(from_date, '%Y-%m-%d')
+    end_date = datetime.datetime.strptime(to_date, '%Y-%m-%d')
+
+    return [
+        (start_date + datetime.timedelta(n)).strftime('%Y-%m-%d')
+        for n in range(int ((end_date - start_date).days))
+    ]
