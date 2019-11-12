@@ -1,0 +1,147 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Business Intelligence Storage persistence infrastructure
+
+Parameters:
+
+  Environment:
+    Description: Environment to deploy to.
+    Type: String
+    Default: test
+    AllowedValues:
+      - dev
+      - test
+      - prod
+
+  ServiceName:
+    Description: The name of the service
+    Type: String
+    Default: working-framework
+
+Resources:
+
+  DataLakeBucket:
+    Type: AWS::S3::Bucket
+    DependsOn: InternalNotificationsTopic
+    Properties:
+      BucketName: !Sub ${ServiceName}-data-lake
+      NotificationConfiguration:
+        TopicConfigurations:
+          - Event: s3:ObjectCreated:Put
+            Topic: !Ref InternalNotificationsTopic
+          - Event: s3:ObjectCreated:Post
+            Topic: !Ref InternalNotificationsTopic
+          - Event: s3:ObjectCreated:CompleteMultipartUpload
+            Topic: !Ref InternalNotificationsTopic
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref DataLakeBucket
+      PolicyDocument:
+        Statement:
+          -
+            Sid: "ABC123"
+            Action:
+              - "s3:*"
+            Effect: Allow
+            Resource: !Join ["", ["arn:aws:s3:::", !Ref DataLakeBucket, "/*"]]
+            Principal:
+              AWS:
+                - "*"
+
+  DataLakeDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      DelaySeconds: 0
+      MaximumMessageSize: 262144
+      MessageRetentionPeriod: 1209600
+      QueueName: !Sub ${ServiceName}-data-lake-dead-letter-queue-${Environment}-${AWS::Region}
+      ReceiveMessageWaitTimeSeconds: 0
+      VisibilityTimeout: 30
+
+  DataLakeQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      DelaySeconds: 0
+      MaximumMessageSize: 262144
+      MessageRetentionPeriod: 1209600
+      QueueName: !Sub ${ServiceName}-data-lake-queue-${Environment}-${AWS::Region}
+      ReceiveMessageWaitTimeSeconds: 20
+      VisibilityTimeout: 3600
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DataLakeDeadLetterQueue.Arn
+        maxReceiveCount: 3
+      Tags:
+        - Key: Name
+          Value: !Sub ${ServiceName}-datalake
+        - Key: Component
+          Value: !Ref ServiceName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: BusinessArea
+          Value: BusinessIntelligence
+        - Key: InfrastructureType
+          Value: Storage
+        - Key: Access
+          Value: Internal
+
+  InternalNotificationsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: !Sub ${ServiceName}-internal-notifications-${Environment}-${AWS::Region}
+      TopicName: !Sub ${ServiceName}-internal-notifications-${Environment}-${AWS::Region}
+
+  InternalNotificationsubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: sqs
+      Endpoint: !GetAtt DataLakeQueue.Arn
+      TopicArn: !Ref InternalNotificationsTopic
+
+  InternalNotificationsTopicPolicy:
+    Type: 'AWS::SNS::TopicPolicy'
+    Properties:
+      Topics:
+        - !Ref InternalNotificationsTopic
+      PolicyDocument:
+        Version: 2012-10-17
+        Id: __default_policy_ID
+        Statement:
+          - Sid: __default_statement_ID
+            Effect: Allow
+            Principal:
+              AWS: '*'
+            Action:
+              - 'SNS:GetTopicAttributes'
+              - 'SNS:SetTopicAttributes'
+              - 'SNS:AddPermission'
+              - 'SNS:RemovePermission'
+              - 'SNS:DeleteTopic'
+              - 'SNS:Subscribe'
+              - 'SNS:ListSubscriptionsByTopic'
+              - 'SNS:Publish'
+              - 'SNS:Receive'
+            Resource: !Ref InternalNotificationsTopic
+
+  InternalNotificationsPermissin:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sns.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !GetAtt DataLakeQueue.Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Ref InternalNotificationsTopic
+      Queues:
+        - !Ref DataLakeQueue
+

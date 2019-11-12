@@ -4,6 +4,8 @@ SERVICE_NAME := $(PROJECT)
 VERSION ?= commit_$(shell git rev-parse --short HEAD)
 ENVIRONMENT ?= test
 AWS_REGION ?= eu-west-1
+PROFILE := serdar.akin
+
 
 export VERSION
 export ENVIRONMENT
@@ -14,25 +16,23 @@ COMPOSE_DEFAULT_FLAGS := -f docker-compose.yaml
 COMPOSE_TEST_FLAGS := $(COMPOSE_DEFAULT_FLAGS) -f docker-compose.test.yaml
 
 validate-templates:
-	aws --profile serdar cloudformation validate-template --template-body file://infrastructure/cfn-$(SERVICE_NAME)-persistence.yml --region eu-west-1
-
+	aws --profile $(PROFILE) cloudformation validate-template --template-body file://infrastructure/cfn-$(SERVICE_NAME)-persistence.yaml --region eu-west-1
 
 %-persistence:
-	aws --region $(REGION) cloudformation $*-stack \
-		--stack-name $(SERVICE_NAME)-persistence-$(ENVIRONMENT) \
-		--template-body file://infrastructure/cfn-$(SERVICE_NAME)-persistence.yml \
+	aws --region $(AWS_REGION) --profile $(PROFILE) cloudformation $*-stack \
+		--stack-name $(PROJECT)-persistence-$(ENVIRONMENT) \
+		--template-body file://infrastructure/cfn-$(SERVICE_NAME)-persistence.yaml \
 		--parameters \
 			ParameterKey=Environment,ParameterValue=$(ENVIRONMENT) \
 		--tags \
-			Key=Component,Value=$(SERVICE_NAME) \
-			Key=Environment,Value=dev \
-			Key=BusinessArea,Value=BusinessIntelligence \
-			Key=Access,Value=Internal \
-			Key=InfrastructureType,Value=Storage \
 			Key=Name,Value=$(SERVICE_NAME)-persistence \
-		--profile serdar
-	aws --region $(REGION) cloudformation wait stack-$*-complete \
-		--stack-name $(SERVICE_NAME)-persistence-$(ENVIRONMENT)
+			Key=Component,Value=$(SERVICE_NAME) \
+			Key=Environment,Value=$(ENVIRONMENT) \
+			Key=BusinessArea,Value=BusinessIntelligence \
+			Key=InfrastructureType,Value=Storage \
+			Key=Access,Value=Internal
+	aws --region $(AWS_REGION) --profile $(PROFILE) cloudformation wait stack-$*-complete \
+		--stack-name $(PROJECT)-persistence-$(ENVIRONMENT)
 
 
 run-%:

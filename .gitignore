@@ -13,3 +13,4 @@ tools/systemtest-base-image/build_*
 *.pytest_cache
 tests/systemtests/.pytest_cache
 .python-version
+.project
