@@ -1,4 +1,4 @@
-PyYAML==5.1.2
+PyYAML==5.4
 requests==2.22.0
 pytest-watch==4.1.0
 pytest-bdd>=2.21.0
